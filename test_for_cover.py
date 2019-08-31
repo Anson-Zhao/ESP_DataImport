@@ -1,0 +1,1 @@
+thefile = open('data/1.csv', 'w')

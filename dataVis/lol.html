@@ -1,0 +1,35 @@
+<html>
+<head>
+    <script type="text/javascript"
+            src="../Library/dygraph/dygraph.js"></script>
+    <link rel="stylesheet" src="../Library/dygraph/dygraph.css" />
+    <script src='jquery-3-4-1.min.js'></script>
+</head>
+<body>
+<div id="graphdiv"></div>
+<script type="text/javascript">
+    g = new Dygraph(
+
+        // containing div
+        document.getElementById("graphdiv"),
+
+        // CSV or path to a CSV file.
+        "z_test.csv"
+
+    );
+</script>
+<script type="text/javascript">
+    function toPython(usrdata){
+        $.ajax({
+            url: "http://yoursite.com:8080",
+            type: "POST",
+            data: { information : "You have a very nice website, sir." , userdata : usrdata },
+            dataType: "json",
+            success: function(data) {
+                <!-- do something here -->
+                $('#somediv').html(data);
+            }});
+        $("#someButton").bind('click', toPython(something));
+</script>
+</body>
+</html>
