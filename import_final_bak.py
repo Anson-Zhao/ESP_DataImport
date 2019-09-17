@@ -33,6 +33,7 @@ def do_something(sc):
     # do your stuff
     work_list = glob.glob("data/*/*.csv")
     print(work_list)
+    print("work list")
 
     for m in work_list:
         print("check is working")
@@ -83,7 +84,7 @@ def do_something(sc):
                         a = i/12*0.02
                         line.append(fields[0][:19] + str(a)[1:4] + "Z," + str(x) + "," + str(y) + "," + str(z))
                         print(fields[0][:19] + str(a)[1:4] + "Z," + str(x) + "," + str(y) + "," + str(z))
-                    thefile = open('decode/' + m[5:16] + '/de'+ m[17:], 'w')
+                    thefile = open('decode/' + m[5:16] + '/de' + m[17:], 'w+')
                     for item in line:
                         thefile.write("%s\n" % item)
                     # shutil.move('data/de' + m[5:],"decode/de" + m[5:])
@@ -98,7 +99,7 @@ def do_something(sc):
             #import the decode file into database
 
             #convert sample data to line protocol (with nanosecond precision)
-            dfa = pd.read_csv('decode/' + m[5:16] + '/de' + m[17:])
+            dfa = pd.read_csv('decode/' + m[5:16] + '/de'+ m[17:])
 
                         #client.create_database('RayESP')
             #client.switch_database('RayESP')
@@ -115,9 +116,8 @@ def do_something(sc):
                 } for a in range(len(dfa))]
 
             try:
-                client = InfluxDBClient(host='localhost', port=8086, database="RayESP", username='rayf', password='RayESP8010')
+                client = InfluxDBClient(host='10.11.90.15', port=8086, database="RayESP", username='rayf', password='RayESP8010')
                 client.write_points(json_body)
-
 
                 os.rename(m, "data/" + m[5:16] + '/fin' + m[17:])
                 shutil.move("data/" + m[5:16] + '/fin' + m[17:],"encode/" + m[5:16] + '/fin' + m[17:])
@@ -146,7 +146,7 @@ def do_something(sc):
     # do_something()
 
 
-    s.enter(30, 1, do_something, (sc,))
+    s.enter(20, 1, do_something, (sc,))
 
-s.enter(30, 1, do_something, (s,))
+s.enter(20, 1, do_something, (s,))
 s.run()
