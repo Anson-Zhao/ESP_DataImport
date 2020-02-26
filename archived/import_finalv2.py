@@ -1,17 +1,13 @@
-import glob
-import os
-import re
-import sched
-import shutil
-import smtplib
-import statistics
-import time
+import datetime
+print(datetime.datetime.now())
 from struct import *
-
 import pandas as pd
+import os
+import shutil
+import glob
+import sched, time
 from influxdb import InfluxDBClient
-
-# print(datetime.datetime.now())
+import smtplib
 
 s = sched.scheduler(time.time, time.sleep)
 
@@ -19,6 +15,7 @@ dirChange = 'cd /home/rayf/'
 delInvalidFile = 'find . -name "*.csv" -size -30k -delete'
 
 os.system(dirChange)
+
 
 def sendemail(from_addr, to_addr_list, cc_addr_list,
               subject, message,
@@ -50,13 +47,9 @@ def do_something(sc):
 
     for m in work_list:
         # print("check is working")
-
-        station = re.search("/(.*)/",m).group(1)
-        file = re.search(station+"/(.*)",m).group(1)
-        pathway = re.search("/(.*)",m).group(1)
-
-        if file[0:3] == "fin":
-            shutil.move(m, "encode/" + pathway)
+        # print(m)
+        if m[17:20] == "fin":
+            shutil.move(m, "encode/" + m[5:])
 
         else:
             # decode the file
@@ -64,6 +57,8 @@ def do_something(sc):
             # json_output = False
             df = pd.read_csv(m)
             # shutil.copyfile(m,"incode/" + m[5:])
+            # print("copy file: ")
+            # print(datetime.datetime.now())
 
             line = ["Time,X,Y,Z"]
 
@@ -73,24 +68,21 @@ def do_something(sc):
                      + str(df["N"][d]) + ","
                      + str(df["Data"][d]) for d in range(len(df))]
 
-            avgLine = []
-            eptX = []
-            eptY = []
-            eptZ = []
 
-            # print(len(lines[0])<100)
-            if len(lines[0]) < 100:
-                # print("I'm working!!!")
-                shutil.move(m, "blank_data/"+pathway)
-                sendemail( from_addr='aaaa.zhao@g.northernacademy.org',
-                        to_addr_list=['azhao@northernacademy.org'],
-                        cc_addr_list=['lin.feng@g.northernacademy.org'],
-                             subject='Import Problem',
-                             message='Hello! You just get a group of empty data from the machine.',
-                               login='aaaa.zhao@g.northernacademy.org',
-                            password='qwer1234')
+            print(len(lines[0])<100)
+            if len(lines[0])<100:
+                print("I'm working!!!")
+                shutil.move(m, "blank_data/"+m[5:])
+                sendemail(from_addr    = 'aaaa.zhao@g.northernacademy.org',
+                      to_addr_list = ['lin.feng@g.northernacademy.org'],
+                      cc_addr_list = ['lin.feng@g.northernacademy.org'],
+                      subject      = 'Import Problem',
+                      message      = 'Hello! You just get a group of empty data from the machine.',
+                      login        = 'aaaa.zhao@g.northernacademy.org',
+                      password     = 'qwer1234')
                 # do_something()
 
+                print("I move it and run the function again")
                 continue
 
             for d in lines:
@@ -116,43 +108,26 @@ def do_something(sc):
                     if csv_output is True:
                         a = i / 12 * 0.02
                         line.append(fields[0][:19] + str(a)[1:4] + "Z," + str(x) + "," + str(y) + "," + str(z))
-                        eptX.append(x)
-                        eptY.append(y)
-                        eptZ.append(z)
-                        # print('This is each line')
                         # print(fields[0][:19] + str(a)[1:4] + "Z," + str(x) + "," + str(y) + "," + str(z))
-                x = statistics.mean(eptX)
-                y = statistics.mean(eptY)
-                z = statistics.mean(eptZ)
-                # avgLine.append(x)
-                # avgLine.append(y)
-                # avgLine.append(z)
-                avgLine.append({
-                    "measurement": station+"avg",
-                    "time": str(fields[0][:19]+"Z"),
-                    "fields": {
-                        "X": float(x),
-                        "Y": float(y),
-                        "Z": float(z)
-                    }
-                })
+                    thefile = open('decode/' + m[5:16] + '/de' + m[17:], 'w+')
+                    for item in line:
+                        thefile.write("%s\n" % item)
+                    # shutil.move('data/de' + m[5:],"decode/de" + m[5:])
 
-            thefile = open('decode/' + station + '/de' + file, 'w+')
-            # print("The file, line 137")
-            # print('decode/' + m[5:16] + '/de' + m[17:])
-            # print("This is avg line")
-            # print(avgLine)
-            for item in line:
-                thefile.write("%s\n" % item)
+            # print("decode successful: ")
+            # print(datetime.datetime.now())
 
             # import the decode file into database
 
             # convert sample data to line protocol (with nanosecond precision)
-            dfa = pd.read_csv('decode/' + station + '/de' + file)
+            dfa = pd.read_csv('decode/' + m[5:16] + '/de' + m[17:])
+
+            # client.create_database('RayESP')
+            # client.switch_database('RayESP')
 
             json_body = [
                 {
-                    "measurement": station,
+                    "measurement": m[5:16],
                     "time": str(dfa["Time"][a]),
                     "fields": {
                         "X": float(dfa["X"][a]),
@@ -162,33 +137,33 @@ def do_something(sc):
                 } for a in range(len(dfa))]
 
             try:
-                client = InfluxDBClient(host='aworldbridgelabs.com', port=8086, database="RayESP", username='rayf', password='RayESP8010')
+                client = InfluxDBClient(host='10.11.90.15', port=8086, database="RayESP", username='rayf', password='RayESP8010')
                 client.write_points(json_body)
-                client = InfluxDBClient(host='aworldbridgelabs.com', port=8086, database="RayESP", username='rayf', password='RayESP8010')
-                client.write_points(avgLine)
 
-                os.rename(m, "data/" + station + '/fin' + file)
-                print("Renamed file: line 177")
-                print("data/" + m[5:16] + '/fin' + m[17:])
-                shutil.move("data/" + station + '/fin' + file, "encode/" + station + '/fin' + file)
+                os.rename(m, "data/" + m[5:16] + '/fin' + m[17:])
+                shutil.move("data/" + m[5:16] + '/fin' + m[17:], "encode/" + m[5:16] + '/fin' + m[17:])
+                # print("import and move successful: ")
+                # print(datetime.datetime.now())
 
             except Exception:
                 print("something wrong about client.write_points!")
-                shutil.move(m, "error/" + pathway)
+                shutil.move(m, "error/" + m[5:])
                 sendemail(from_addr='aaaa.zhao@g.northernacademy.org',
-                          to_addr_list=['azhao@northernacademy.org'],
+                          to_addr_list=['lin.feng@g.northernacademy.org'],
                           cc_addr_list=['lin.feng@g.northernacademy.org'],
                           subject='Import Problem',
-                          message='Hello! It seems like there are some influxDB importing problem about the method, '
-                                  'client.write_points',
+                          message='Hello! It seems like there are some influxDB importing problem about the method, client.write_points',
                           login='aaaa.zhao@g.northernacademy.org',
                           password='qwer1234')
             continue
 
-    # print("function done: ")
-    # print(datetime.datetime.now())
+    print("function done: ")
+    print(datetime.datetime.now())
+
+    # do_something()
 
     s.enter(20, 1, do_something, (sc,))
+
 
 s.enter(20, 1, do_something, (s,))
 s.run()
