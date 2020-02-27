@@ -168,8 +168,8 @@ def do_something(sc):
                 client.write_points(avgLine)
 
                 os.rename(m, "data/" + station + '/fin' + file)
-                print("Renamed file: line 177")
-                print("data/" + m[5:16] + '/fin' + m[17:])
+                # print("Renamed file: line 177")
+                # print("data/" + m[5:16] + '/fin' + m[17:])
                 shutil.move("data/" + station + '/fin' + file, "encode/" + station + '/fin' + file)
 
             except Exception:
