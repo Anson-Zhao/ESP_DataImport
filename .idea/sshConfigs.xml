@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig authType="PASSWORD" host="aworldbridgelabs.com" id="675e3fe9-33dc-40f6-a4e1-ca50ead6ef33" port="5532" customName="AWB" nameFormat="CUSTOM" username="ansonz" />
+      <sshConfig authType="PASSWORD" host="dtrends.aworldbridgelabs.com" id="8ac20eff-16d2-4447-9767-ceeb1d3b946b" port="5532" customName="dtrends.aworldbridgelabs.com" nameFormat="CUSTOM" username="ftaa" />
+    </configs>
+  </component>
+</project>

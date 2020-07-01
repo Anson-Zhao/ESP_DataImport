@@ -1,5 +1,4 @@
 import datetime
-
 print(datetime.datetime.now())
 from struct import *
 import pandas as pd
@@ -9,13 +8,15 @@ import glob
 import sched, time
 from influxdb import InfluxDBClient
 import smtplib
+import statistics
 
 s = sched.scheduler(time.time, time.sleep)
 
-dirChange = 'cd /home/rayf/RayESP/'
+dirChange = 'cd /home/rayf/'
 delInvalidFile = 'find . -name "*.csv" -size -30k -delete'
 
 os.system(dirChange)
+
 
 def sendemail(from_addr, to_addr_list, cc_addr_list,
               subject, message,
@@ -68,6 +69,27 @@ def do_something(sc):
                      + str(df["N"][d]) + ","
                      + str(df["Data"][d]) for d in range(len(df))]
 
+            avgLine=[]
+            eptX=[]
+            eptY=[]
+            eptZ=[]
+
+            print(len(lines[0])<100)
+            if len(lines[0])<100:
+                print("I'm working!!!")
+                shutil.move(m, "blank_data/"+m[5:])
+                sendemail(from_addr    = 'aaaa.zhao@g.northernacademy.org',
+                      to_addr_list = ['lin.feng@g.northernacademy.org'],
+                      cc_addr_list = ['lin.feng@g.northernacademy.org'],
+                      subject      = 'Import Problem',
+                      message      = 'Hello! You just get a group of empty data from the machine.',
+                      login        = 'aaaa.zhao@g.northernacademy.org',
+                      password     = 'qwer1234')
+                # do_something()
+
+                print("I move it and run the function again")
+                continue
+
             for d in lines:
                 fields = d.split(",")
                 # print(fields[0])
@@ -91,10 +113,34 @@ def do_something(sc):
                     if csv_output is True:
                         a = i / 12 * 0.02
                         line.append(fields[0][:19] + str(a)[1:4] + "Z," + str(x) + "," + str(y) + "," + str(z))
+                        eptX.append(x)
+                        eptY.append(y)
+                        eptZ.append(z)
+                        # print('This is each line')
                         # print(fields[0][:19] + str(a)[1:4] + "Z," + str(x) + "," + str(y) + "," + str(z))
-                    thefile = open('decode/' + m[5:16] + '/de' + m[17:], 'w+')
-                    for item in line:
-                        thefile.write("%s\n" % item)
+                x = statistics.mean(eptX)
+                y = statistics.mean(eptY)
+                z = statistics.mean(eptZ)
+                # avgLine.append(x)
+                # avgLine.append(y)
+                # avgLine.append(z)
+                avgLine.append({
+                    "measurement": m[5:16]+"avg",
+                    "time": str(fields[0][:19]+"Z"),
+                    "fields": {
+                        "X": float(x),
+                        "Y": float(y),
+                        "Z": float(z)
+                    }
+                })
+
+            thefile = open('decode/' + m[5:16] + '/de' + m[17:], 'w+')
+            # print("This is avg line")
+            # print(avgLine)
+            for item in line:
+                thefile.write("%s\n" % item)
+            # print('this is line array')
+            # print(line)
                     # shutil.move('data/de' + m[5:],"decode/de" + m[5:])
 
             # print("decode successful: ")
@@ -120,9 +166,11 @@ def do_something(sc):
                 } for a in range(len(dfa))]
 
             try:
-                client = InfluxDBClient(host='10.11.90.15', port=8086, database="RayESP", username='rayf',
-                                        password='RayESP8010')
+                client = InfluxDBClient(host='localhost', port=8086, database="RayESP", username='rayf', password='RayESP8010')
                 client.write_points(json_body)
+                client = InfluxDBClient(host='localhost', port=8086, database="RayESP", username='rayf', password='RayESP8010')
+                client.write_points(avgLine)
+
 
                 os.rename(m, "data/" + m[5:16] + '/fin' + m[17:])
                 shutil.move("data/" + m[5:16] + '/fin' + m[17:], "encode/" + m[5:16] + '/fin' + m[17:])

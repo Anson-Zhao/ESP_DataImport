@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="bbf16386-447a-49ed-ba56-9c383018da73" name="AWB" url="">
+        <fileTransfer host="aworldbridgelabs.com" port="5532" rootFolder="/home/rayf/RayESP/" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="5532" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="a9406c98-f1e1-48dc-99c3-c6a19ac47ccc" name="dtrends.aworldbridgelabs.com" url="http://localhost:63342/">
+        <fileTransfer host="dtrends.aworldbridgelabs.com" port="5532" rootFolder="/var/www/dtrends" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="5532" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
