@@ -2,14 +2,14 @@
 <project version="4">
   <component name="PublishConfigData" serverName="AWB">
     <serverData>
-      <paths name="AWB">
+      <paths name="90.15">
         <serverdata>
           <mappings>
             <mapping deploy="/" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
-      <paths name="dtrends.aworldbridgelabs.com">
+      <paths name="AWB">
         <serverdata>
           <mappings>
             <mapping deploy="/" local="$PROJECT_DIR$" web="/" />
