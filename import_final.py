@@ -1,11 +1,11 @@
 import glob
 import os
 import re
-import sched
+# import sched
 import shutil
 import smtplib
 import statistics
-import time
+# import time
 from struct import *
 
 import pandas as pd
@@ -13,12 +13,13 @@ from influxdb import InfluxDBClient
 
 # print(datetime.datetime.now())
 
-s = sched.scheduler(time.time, time.sleep)
+# s = sched.scheduler(time.time, time.sleep)
 
 dirChange = 'cd /home/rayf/'
 delInvalidFile = 'find . -name "*.csv" -size -30k -delete'
 
 os.system(dirChange)
+
 
 def sendemail(from_addr, to_addr_list, cc_addr_list,
               subject, message,
@@ -38,11 +39,13 @@ def sendemail(from_addr, to_addr_list, cc_addr_list,
     return problems
 
 
-def do_something(sc):
+def do_something():
     # print("Begin function: ")
     # print(datetime.datetime.now())
     # do your stuff
+    x = 0
     os.system(delInvalidFile)
+    # work_list = []
 
     work_list = glob.glob("data/*/*.csv")
     # print(work_list)
@@ -51,9 +54,9 @@ def do_something(sc):
     for m in work_list:
         # print("check is working")
 
-        station = re.search("/(.*)/",m).group(1)
-        file = re.search(station+"/(.*)",m).group(1)
-        pathway = re.search("/(.*)",m).group(1)
+        station = re.search("/(.*)/", m).group(1)
+        file = re.search(station + "/(.*)", m).group(1)
+        pathway = re.search("/(.*)", m).group(1)
 
         if file[0:3] == "fin":
             shutil.move(m, "encode/" + pathway)
@@ -63,6 +66,7 @@ def do_something(sc):
             csv_output = True
             # json_output = False
             df = pd.read_csv(m)
+            # print(df)
             # shutil.copyfile(m,"incode/" + m[5:])
 
             line = ["Time,X,Y,Z"]
@@ -78,18 +82,31 @@ def do_something(sc):
             eptY = []
             eptZ = []
 
-            # print(len(lines[0])<100)
-            if len(lines[0]) < 100:
+            # print(m)
+            # print(lines)
+            # print(lines[0])
+            # print(len(lines[0]))
+            # print(pd.notna(lines))
+            if not lines:
+                shutil.move(m, "blank_data/" + pathway)
+                sendemail(from_addr='aaaa.zhao@g.northernacademy.org',
+                          to_addr_list=['azhao@northernacademy.org'],
+                          cc_addr_list=['lin.feng@g.northernacademy.org'],
+                          subject='Import Problem',
+                          message='Hello! You just get a group of empty data from the machine.',
+                          login='aaaa.zhao@g.northernacademy.org',
+                          password='qwer1234')
+
+            elif len(lines[0]) < 100:
                 # print("I'm working!!!")
-                shutil.move(m, "blank_data/"+pathway)
-                sendemail( from_addr='aaaa.zhao@g.northernacademy.org',
-                        to_addr_list=['azhao@northernacademy.org'],
-                        cc_addr_list=['lin.feng@g.northernacademy.org'],
-                             subject='Import Problem',
-                             message='Hello! You just get a group of empty data from the machine.',
-                               login='aaaa.zhao@g.northernacademy.org',
-                            password='qwer1234')
-                # do_something()
+                shutil.move(m, "blank_data/" + pathway)
+                sendemail(from_addr='aaaa.zhao@g.northernacademy.org',
+                          to_addr_list=['azhao@northernacademy.org'],
+                          cc_addr_list=['lin.feng@g.northernacademy.org'],
+                          subject='Import Problem',
+                          message='Hello! You just get a group of empty data from the machine.',
+                          login='aaaa.zhao@g.northernacademy.org',
+                          password='qwer1234')
 
                 continue
 
@@ -128,8 +145,8 @@ def do_something(sc):
                 # avgLine.append(y)
                 # avgLine.append(z)
                 avgLine.append({
-                    "measurement": station+"avg",
-                    "time": str(fields[0][:19]+"Z"),
+                    "measurement": station + "avg",
+                    "time": str(fields[0][:19] + "Z"),
                     "fields": {
                         "X": float(x),
                         "Y": float(y),
@@ -162,9 +179,11 @@ def do_something(sc):
                 } for a in range(len(dfa))]
 
             try:
-                client = InfluxDBClient(host='aworldbridgelabs.com', port=8086, database="RayESP", username='rayf', password='RayESP8010')
+                client = InfluxDBClient(host='localhost', port=8086, database="RayESP", username='rayf',
+                                        password='RayESP8010')
                 client.write_points(json_body)
-                client = InfluxDBClient(host='aworldbridgelabs.com', port=8086, database="RayESP", username='rayf', password='RayESP8010')
+                client = InfluxDBClient(host='localhost', port=8086, database="RayESP", username='rayf',
+                                        password='RayESP8010')
                 client.write_points(avgLine)
 
                 os.rename(m, "data/" + station + '/fin' + file)
@@ -173,7 +192,7 @@ def do_something(sc):
                 shutil.move("data/" + station + '/fin' + file, "encode/" + station + '/fin' + file)
 
             except Exception:
-                print("something wrong about client.write_points!")
+                # print("something wrong about client.write_points!")
                 shutil.move(m, "error/" + pathway)
                 sendemail(from_addr='aaaa.zhao@g.northernacademy.org',
                           to_addr_list=['azhao@northernacademy.org'],
@@ -184,11 +203,20 @@ def do_something(sc):
                           login='aaaa.zhao@g.northernacademy.org',
                           password='qwer1234')
             continue
+    x = 1
 
     # print("function done: ")
     # print(datetime.datetime.now())
 
-    s.enter(20, 1, do_something, (sc,))
+    # s.enter(20, 1, do_something, (sc,))
 
-s.enter(20, 1, do_something, (s,))
-s.run()
+
+# s.enter(20, 1, do_something, (s,))
+# s.run()
+
+# do_something()
+
+x = 1
+while True:
+    while x == 1:
+        do_something()

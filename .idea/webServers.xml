@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="a111b1c5-40d1-44b2-891d-a3720c9c8a5e" name="AWB" url="http://207.38.89.104">
-        <fileTransfer rootFolder="/home/rayf/RayESP" accessType="SFTP" sshConfigId="4e04c4fa-d71b-4275-9ba0-864ad6c29a24" sshConfig="AWB">
+        <fileTransfer rootFolder="/home/rayf/RayESP" accessType="SFTP" host="207.38.89.104" port="5532" sshConfigId="bdb1b7cf-b36a-4f2b-b340-bb561364bdf8" sshConfig="AWB">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
